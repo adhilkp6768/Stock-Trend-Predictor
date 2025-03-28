@@ -1,8 +1,10 @@
 import os
 from run import create_app
 
+# Create the Flask application instance
 app = create_app()
 
+# This section only runs when executing the file directly
 if __name__ == "__main__":
     # For local development, use localhost and port 5000
     # For production, use 0.0.0.0 and the PORT environment variable
