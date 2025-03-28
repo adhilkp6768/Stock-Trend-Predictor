@@ -6,3 +6,4 @@ scikit-learn==1.0
 matplotlib==3.4.3
 yfinance==0.1.63
 gunicorn==20.1.0
+xgboost==1.5.0
