@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Trend Predictor</title>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --text-color: #e2e8f0;
+            --bg-color: #111827;
+            --card-bg: #1f2937;
+            --card-border: #374151;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            margin: 0;
+            padding: 20px;
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--card-border);
+        }
+        
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 0 0 10px rgba(79, 70, 229, 0.5);
+            letter-spacing: 1px;
+        }
+        
+        /* Form styling improvements */
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 400px;
+            margin: 0 auto 30px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        label {
+            font-weight: bold;
+            color: var(--text-color);
+            font-size: 1.05em;
+        }
+        
+        select, input[type="text"] {
+            padding: 12px;
+            font-size: 1em;
+            border: 2px solid #374151;
+            border-radius: 8px;
+            width: 100%;
+            transition: all 0.3s ease;
+            background-color: #283548;
+            color: var(--text-color);
+        }
+        
+        input[type="submit"] {
+            padding: 14px 28px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            margin-top: 10px;
+            align-self: center;
+        }
+        
+        select:focus, input[type="text"]:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3);
+        }
+        
+        input[type="submit"]:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 70, 229, 0.4);
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            background: #283548;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid #374151;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .result h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        
+        .result p {
+            margin: 10px 0;
+            font-size: 1.1em;
+            padding: 8px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .result p strong {
+            color: #a5b4fc;
+        }
+        
+        img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 20px;
+            border-radius: 12px;
+            cursor: zoom-in;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+            border: 1px solid #374151;
+        }
+        
+        img:hover {
+            transform: scale(1.02);
+        }
+        
+        .download-link {
+            display: inline-block;
+            margin-top: 15px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            padding: 8px 16px;
+            border-radius: 6px;
+            background: rgba(79, 70, 229, 0.1);
+            border: 1px solid rgba(79, 70, 229, 0.3);
+        }
+        
+        .download-link:hover {
+            color: white;
+            background: var(--primary-color);
+            transform: translateY(-2px);
+        }
+        
+        .button-group {
+            text-align: center;
+            margin-top: 40px;
+        }
+        
+        .button-group button {
+            padding: 12px 24px;
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .button-group button:hover {
+            background: #b91c1c;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+        }
+        
+        .error-message {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: bold;
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+        }
+        
+        .loading-spinner {
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1.5s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .visualization-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .visualization-section {
+            background: #283548;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            border: 1px solid #374151;
+            transition: transform 0.3s ease;
+        }
+        
+        .visualization-section:hover {
+            transform: translateY(-5px);
+        }
+        
+        .visualization-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.5em;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        .visualization-section h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 3px;
+        }
+        
+        .stock-info {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .stock-info p {
+            margin: 10px 0;
+            padding: 8px;
+            border-radius: 6px;
+            transition: background 0.3s ease;
+        }
+        
+        .stock-info p:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            select, input[type="text"] {
+                width: 100%;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+        }
+        
+        /* Trend colors */
+        .trend-up {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+        
+        .trend-down {
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+        
+        /* Tooltip styles */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #374151;
+            color: var(--text-color);
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid #4b5563;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* Navigation bar styling */
+        .nav-bar {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .nav-link {
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: center;
+            min-width: 120px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .nav-link:hover {
+            background: rgba(79, 70, 229, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .nav-link.active {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/zoom.js/0.3/zoom.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Stock Trend Predictor</h1>
+        
+        <div class="nav-bar">
+            <a href="/" class="nav-link active">Home</a>
+            <a href="/about" class="nav-link">About</a>
+            <a href="/contact" class="nav-link">Contact</a>
+        </div>
+        
+        <form method="POST" id="prediction-form">
+            <div class="form-group">
+                <label for="ticker">Select a Stock:</label>
+                <select name="ticker" id="ticker">
+                    <option value="">-- Choose a Stock --</option>
+                    {% for stock in stocks %}
+                        <option value="{{ stock }}">{{ stock }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="custom_ticker">Custom Ticker:</label>
+                <input type="text" name="custom_ticker" id="custom_ticker" placeholder="e.g., SPY">
+            </div>
+            <div class="form-group">
+                <label for="prediction_period">Prediction Period:</label>
+                <select name="prediction_period" id="prediction_period">
+                    {% for period in periods %}
+                        <option value="{{ period }}">{{ period.capitalize() }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <input type="submit" value="Analyze">
+        </form>
+        
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+            <p>Analyzing stock data and generating predictions...</p>
+            <p class="loading-message">This may take a few moments...</p>
+        </div>
+        
+        {% if error %}
+            <div class="error-message">
+                <p>{{ error }}</p>
+            </div>
+        {% endif %}
+        
+        {% if result %}
+            <div class="result">
+                {% if result.error %}
+                    <p style="color: var(--danger-color);">Error: {{ result.error }}</p>
+                {% else %}
+                    <h3>Results for {{ result.ticker }} ({{ result.period }})</h3>
+                    <p>
+                        <strong>Accuracy:</strong> 
+                        <span class="tooltip">{{ result.accuracy }}
+                            <span class="tooltiptext">Model accuracy based on historical data</span>
+                        </span>
+                    </p>
+                    <p>
+                        <strong>Predicted Trend:</strong> 
+                        <span class="{% if result.trend == 'UP' %}trend-up{% else %}trend-down{% endif %}">
+                            {{ result.trend }}
+                            {% if result.trend == 'UP' %}↑{% else %}↓{% endif %}
+                        </span>
+                    </p>
+                    <p>
+                        <strong>Confidence:</strong> 
+                        <span class="tooltip">{{ result.confidence }}
+                            <span class="tooltiptext">How confident the model is in its prediction</span>
+                        </span>
+                    </p>
+                {% endif %}
+            </div>
+        {% endif %}
+        
+        {% if plot_url or importance_plot_url %}
+            <div class="visualization-container">
+                {% if plot_url %}
+                    <div class="visualization-section">
+                        <h3>Stock Price Trend Prediction</h3>
+                        <img src="data:image/png;base64,{{ plot_url }}" alt="Stock Trend Graph" id="stock-graph">
+                        <a href="data:image/png;base64,{{ plot_url }}" download="{{ result.ticker }}_{{ result.period }}_graph.png" class="download-link">Download High-Resolution Image</a>
+                    </div>
+                    
+                    {% if result and not result.error and result.ticker in stock_details %}
+                        <div class="visualization-section">
+                            <h3>Stock Details: {{ result.ticker }}</h3>
+                            <div class="stock-info">
+                                <p><strong>Company:</strong> {{ stock_details[result.ticker].name }}</p>
+                                <p><strong>Sector:</strong> {{ stock_details[result.ticker].sector }}</p>
+                                <p><strong>Description:</strong> {{ stock_details[result.ticker].description }}</p>
+                                <p><strong>Current Price:</strong> ${{ current_prices[result.ticker]|round(2) if current_prices[result.ticker] != "N/A" else "N/A" }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endif %}
+                
+                {% if importance_plot_url %}
+                    <div class="visualization-section">
+                        <h3>Feature Importance Analysis</h3>
+                        <img src="data:image/png;base64,{{ importance_plot_url }}" alt="Feature Importance" id="importance-graph">
+                        <a href="data:image/png;base64,{{ importance_plot_url }}" download="{{ result.ticker }}_feature_importance.png" class="download-link">Download Feature Importance</a>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+        
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize zoom for images
+            const images = document.querySelectorAll('img');
+            images.forEach(img => {
+                if (img) {
+                    new Zoom(img, {
+                        maxZoom: 5,
+                        minZoom: 1
+                    });
+                }
+            });
+            
+            // Form submission loading indicator
+            const form = document.getElementById('prediction-form');
+            if (form) {
+                form.addEventListener('submit', function(event) {
+                    // Check if at least one input is provided
+                    const tickerValue = document.getElementById('ticker').value;
+                    const customTickerValue = document.getElementById('custom_ticker').value;
+                    
+                    if (!tickerValue && !customTickerValue) {
+                        event.preventDefault(); // Prevent form submission
+                        alert('Please select a stock or enter a custom ticker symbol');
+                        return false;
+                    }
+                    
+                    // Show loading indicator
+                    document.getElementById('loading').style.display = 'block';
+                    
+                    // Animated loading messages
+                    const loadingMessages = [
+                        "Analyzing market patterns...",
+                        "Calculating technical indicators...",
+                        "Training prediction model...",
+                        "Generating visualizations...",
+                        "Almost there..."
+                    ];
+                    
+                    const loadingMessageElement = document.querySelector('.loading-message');
+                    let messageIndex = 0;
+                    
+                    const messageInterval = setInterval(() => {
+                        loadingMessageElement.textContent = loadingMessages[messageIndex];
+                        messageIndex = (messageIndex + 1) % loadingMessages.length;
+                    }, 2000);
+                    
+                    // Clear interval after 20 seconds (fallback)
+                    setTimeout(() => {
+                        clearInterval(messageInterval);
+                    }, 20000);
+                });
+            }
+            
+            // Ticker dropdown enhancement
+            const tickerSelect = document.getElementById('ticker');
+            const customTickerInput = document.getElementById('custom_ticker');
+            
+            if (tickerSelect && customTickerInput) {
+                tickerSelect.addEventListener('change', function() {
+                    if (this.value) {
+                        customTickerInput.value = '';
+                    }
+                });
+                
+                customTickerInput.addEventListener('input', function() {
+                    if (this.value) {
+                        tickerSelect.value = '';
+                    }
+                });
+            }
+        });
+        
+        function confirmShutdown() {
+            if (confirm("Are you sure you want to exit the app?")) {
+                fetch('/shutdown', { method: 'POST' })
+                    .then(() => {
+                        const container = document.querySelector('.container');
+                        container.innerHTML = '<div class="result"><h3>App is shutting down...</h3><p>Thank you for using Stock Trend Predictor!</p></div>';
+                        setTimeout(() => {
+                            alert("App has been shut down. You can close this window.");
+                        }, 2000);
+                    })
+                    .catch(err => console.error("Shutdown failed:", err));
+            }
+        }
+    </script>
+</body>
+</html>
