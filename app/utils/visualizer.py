@@ -5,6 +5,8 @@ import pandas as pd
 import io
 import base64
 
+# In your generate_trend_plot function, ensure proper date formatting and prediction line
+
 def generate_trend_plot(prediction_result):
     """Generate stock trend visualization plot"""
     df = prediction_result['df']
