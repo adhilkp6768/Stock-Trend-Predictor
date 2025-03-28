@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')  # Use non-interactive backend to avoid Tkinter errors
 import matplotlib.pyplot as plt
 import pandas as pd
 import io

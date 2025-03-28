@@ -1,4 +1,4 @@
-from flask import render_template, request, current_app
+from flask import render_template, request, current_app, jsonify
 from app.models.predictor import predict_stock_trend
 from app.utils.visualizer import generate_trend_plot
 
@@ -56,6 +56,10 @@ def register_routes(app):
     @app.route('/contact')
     def contact():
         return render_template('contact.html')
+    
+    @app.route('/ping', methods=['GET'])
+    def ping():
+        return jsonify({"status": "alive"}), 200
 
     @app.route('/shutdown', methods=['POST'])
     def shutdown():
