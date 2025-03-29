@@ -16,72 +16,41 @@ def generate_trend_plot(prediction_result):
     # Create figure and plot historical data
     fig, ax = plt.subplots(figsize=(12, 6))
     
-    # Adjust the displayed date range based on prediction period
-    if prediction_period == "weekly":
-        # For weekly, show last 6 months of data
-        start_date = df.index[-1] - pd.Timedelta(days=180)
-        future_days = 30  # Show 30 days into the future
-    elif prediction_period == "monthly":
-        # For monthly, show last 12 months of data
-        start_date = df.index[-1] - pd.Timedelta(days=365)
-        future_days = 90  # Show 90 days into the future
-    else:  # yearly
-        # For yearly, show last 2 years of data
-        start_date = df.index[-1] - pd.Timedelta(days=730)
-        future_days = 180  # Show 180 days into the future
+    # Use all available historical data
+    display_df = df
     
-    # Filter data for display - ensure we have enough data
-    try:
-        display_df = df[df.index >= start_date]
-        if len(display_df) < 10:  # If not enough data in range, show all available
-            display_df = df
-    except Exception as e:
-        # Fallback to all data if date filtering fails
-        display_df = df
-    
-    # Plot the filtered data
+    # Plot the historical data
     ax.plot(display_df.index, display_df['Close'], label="Close", color='blue', linewidth=1.5)
     ax.plot(display_df.index, display_df['High'], label="High", color='green', alpha=0.6, linewidth=1)
-    ax.plot(display_df.index, display_df['Low'], label="Low", color='salmon', alpha=0.6, linewidth=1)
+    ax.plot(display_df.index, display_df['Low'], label="Low", color='red', alpha=0.6, linewidth=1)
     
-    # Add prediction line with multiple points for smoother curve
+    # Add prediction line
     last_date = df.index[-1]
     last_price = df['Close'].iloc[-1]
     
-    # Create a series of future dates and predicted prices
-    num_points = 10
-    future_dates = [last_date + pd.Timedelta(days=i*future_days/num_points) for i in range(num_points+1)]
+    # Set future prediction period
+    if prediction_period == "weekly":
+        future_days = 30
+    elif prediction_period == "monthly":
+        future_days = 90
+    else:  # yearly
+        future_days = 365
     
-    # Calculate trend factors based on historical volatility
-    try:
-        # Calculate historical volatility
-        hist_volatility = df['Close'].pct_change().std() * np.sqrt(252)  # Annualized
-        
-        # Adjust trend factors based on volatility and prediction period
-        base_factor = max(0.02, min(0.15, hist_volatility))
-        
-        if prediction_period == "yearly":
-            trend_factor = base_factor * 3
-        elif prediction_period == "monthly":
-            trend_factor = base_factor * 1.5
-        else:  # weekly
-            trend_factor = base_factor
-    except:
-        # Fallback to default values if calculation fails
-        if prediction_period == "yearly":
-            trend_factor = 0.12
-        elif prediction_period == "monthly":
-            trend_factor = 0.06
-        else:  # weekly
-            trend_factor = 0.03
+    # Create future date for prediction endpoint
+    future_date = last_date + pd.Timedelta(days=future_days)
     
+    # Calculate predicted price based on trend
     if trend == "UP":
-        predicted_prices = [last_price * (1 + trend_factor * (i/num_points)) for i in range(num_points+1)]
+        future_price = last_price * 1.05 if prediction_period == "weekly" else \
+                      last_price * 1.10 if prediction_period == "monthly" else \
+                      last_price * 1.15
     else:
-        predicted_prices = [last_price * (1 - trend_factor * (i/num_points)) for i in range(num_points+1)]
+        future_price = last_price * 0.95 if prediction_period == "weekly" else \
+                      last_price * 0.90 if prediction_period == "monthly" else \
+                      last_price * 0.85
     
-    # Plot the prediction line
-    ax.plot(future_dates, predicted_prices, 
+    # Plot prediction line
+    ax.plot([last_date, future_date], [last_price, future_price], 
             label=f"Predicted Trend ({prediction_period.capitalize()})", 
             color='red', linestyle='--', linewidth=2)
     
@@ -92,12 +61,13 @@ def generate_trend_plot(prediction_result):
     ax.legend(loc='best')
     ax.grid(True, alpha=0.3)
     
-    # Format date axis to be more readable
+    # Format date axis
     plt.gcf().autofmt_xdate()
     
-    # Set y-axis limits to provide some padding
-    y_min = min(display_df['Low'].min(), min(predicted_prices)) * 0.95
-    y_max = max(display_df['High'].max(), max(predicted_prices)) * 1.05
+    # Set y-axis limits with padding
+    price_range = display_df['High'].max() - display_df['Low'].min()
+    y_min = display_df['Low'].min() - (price_range * 0.1)
+    y_max = max(display_df['High'].max(), future_price) + (price_range * 0.1)
     ax.set_ylim(y_min, y_max)
     
     # Convert plot to base64 string
